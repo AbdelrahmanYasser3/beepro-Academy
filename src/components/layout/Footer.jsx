@@ -5,39 +5,44 @@ import {
   FiFacebook, 
   FiTwitter, 
   FiInstagram, 
-  FiYoutube, 
   FiLinkedin,
   FiMail,
   FiPhone,
   FiMapPin,
   FiSend
 } from 'react-icons/fi'
+import { SiTiktok } from 'react-icons/si'
+import ImageWithFallback from '../ui/ImageWithFallback'
 
 const Footer = () => {
   const { t } = useTranslation()
   const { language } = useLanguage()
 
+  const handleNewsletterSubmit = (e) => {
+    e.preventDefault()
+  }
+
   const quickLinks = [
     { to: '/', label: t('nav.home') },
     { to: '/courses', label: t('nav.courses') },
-    { to: '/blogs', label: language === 'ar' ? 'المدونة' : 'Blogs' },
+    { to: '/blogs', label: t('nav.blogs') },
     { to: '/about', label: t('nav.about') },
     { to: '/contact', label: t('nav.contact') },
   ]
 
   const categories = [
-    { to: '/courses?category=programming', label: t('home.categories.programming') },
-    { to: '/courses?category=design', label: t('home.categories.design') },
-    { to: '/courses?category=it', label: t('home.categories.it') },
-    { to: '/courses?category=finance', label: t('home.categories.finance') },
+    { to: '/courses?category=financial_markets', label: t('footer.financialMarkets') },
+    { to: '/courses?category=data_analysis', label: t('footer.dataAnalysis') },
+    { to: '/courses?category=networking', label: t('footer.networking') },
+    { to: '/courses?category=it', label: t('footer.it') },
   ]
 
   const socialLinks = [
-    { icon: FiFacebook, href: '#', label: 'Facebook' },
-    { icon: FiTwitter, href: '#', label: 'Twitter' },
-    { icon: FiInstagram, href: '#', label: 'Instagram' },
-    { icon: FiYoutube, href: '#', label: 'YouTube' },
-    { icon: FiLinkedin, href: '#', label: 'LinkedIn' },
+    { icon: FiFacebook, href: 'https://www.facebook.com/share/1BtuCiJgMo/', label: 'Facebook' },
+    { icon: FiTwitter, href: 'https://x.com/BEEPROpp', label: 'X' },
+    { icon: FiInstagram, href: 'https://www.instagram.com/beepro99?igsh=MTN4aXFoZnZ6bHdsMQ==', label: 'Instagram' },
+    { icon: SiTiktok, href: 'https://www.tiktok.com/@bee.pro46?_r=1&_t=ZS-97PNKSmUp52', label: 'TikTok' },
+    { icon: FiLinkedin, href: 'https://www.linkedin.com/company/bee-professiona/', label: 'LinkedIn' },
   ]
 
   return (
@@ -47,15 +52,13 @@ const Footer = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-12">
           {/* About Section */}
           <div className="lg:col-span-1">
-            <Link to="/" className="flex items-center gap-2 mb-4">
-              <img
-                src="/assets/platform-logo.jpg"
+            <Link to="/" className="flex items-center gap-2 mb-4 min-w-0">
+              <ImageWithFallback
+                src="/assets/platform-logo-light.svg"
                 alt="BeePro Academy"
-                className="w-10 h-10 rounded-xl object-cover"
+                className="h-11 w-auto max-w-[180px] object-contain object-start shrink-0"
+                fallback="/assets/platform-logo-light.svg"
               />
-              <span className="text-xl font-bold text-white">
-                BeePro Academy
-              </span>
             </Link>
             <p className="text-secondary-400 text-sm leading-relaxed mb-6">
               {t('footer.aboutText')}
@@ -121,11 +124,11 @@ const Footer = () => {
               </li>
               <li className="flex items-center gap-3 text-secondary-400">
                 <FiPhone className="w-5 h-5 text-primary-400 shrink-0" />
-                <span dir="ltr">+966 50 123 4567</span>
+                <span dir="ltr" className="ltr-isolate">+966 50 123 4567</span>
               </li>
               <li className="flex items-start gap-3 text-secondary-400">
                 <FiMapPin className="w-5 h-5 text-primary-400 shrink-0 mt-0.5" />
-                <span>{language === 'ar' ? 'الرياض، المملكة العربية السعودية' : 'Riyadh, Saudi Arabia'}</span>
+                <span>{t('location.uae')}</span>
               </li>
             </ul>
 
@@ -134,15 +137,15 @@ const Footer = () => {
             <p className="text-secondary-400 text-sm mb-3">
               {t('footer.newsletterText')}
             </p>
-            <form className="flex gap-2">
+            <form className="flex flex-col sm:flex-row gap-2" onSubmit={handleNewsletterSubmit}>
               <input
                 type="email"
                 placeholder={t('auth.login.email')}
-                className="flex-1 px-4 py-2 bg-secondary-800 border border-secondary-700 rounded-lg text-white placeholder-secondary-500 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                className="w-full flex-1 px-4 py-2 bg-secondary-800 border border-secondary-700 rounded-lg text-white placeholder-secondary-500 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
               />
               <button
                 type="submit"
-                className="px-4 py-2 bg-primary-500 hover:bg-primary-600 rounded-lg transition-colors"
+                className="w-full sm:w-auto px-4 py-2 bg-primary-500 hover:bg-primary-600 rounded-lg transition-colors flex items-center justify-center shrink-0"
               >
                 <FiSend className="w-5 h-5" />
               </button>

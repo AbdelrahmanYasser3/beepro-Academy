@@ -1,192 +1,257 @@
-import { Link } from 'react-router-dom'
-import { useTranslation } from 'react-i18next'
-import { useLanguage } from '../../contexts/LanguageContext'
-import { useAuth } from '../../contexts/AuthContext'
-import { 
-  FiClock, 
-  FiUsers, 
-  FiStar, 
+import { Link } from "react-router-dom";
+import { useTranslation } from "react-i18next";
+import { useLanguage } from "../../contexts/LanguageContext";
+import { useCurrency } from "../../contexts/CurrencyContext";
+import { useAuth } from "../../contexts/AuthContext";
+import {
+  FiClock,
+  FiUsers,
+  FiStar,
   FiPlay,
   FiBookOpen,
   FiArrowRight,
-  FiArrowLeft
-} from 'react-icons/fi'
+  FiArrowLeft,
+} from "react-icons/fi";
+import ImageWithFallback from "./ImageWithFallback";
 
-const CourseCard = ({ course, variant = 'default' }) => {
-  const { t } = useTranslation()
-  const { language, isRTL } = useLanguage()
-  const { user, isAuthenticated } = useAuth()
+const CourseCard = ({ course, variant = "default" }) => {
+  const { t } = useTranslation();
+  const { language, isRTL } = useLanguage();
+  const { formatCoursePrice } = useCurrency();
+  const { user, isAuthenticated } = useAuth();
 
-  const fallbackThumbnail = '/assets/hero-background.png'
-  const thumbnailSrc = course.thumbnail || course.thumbnail_url || course.image || fallbackThumbnail
-  const instructor = typeof course.instructor === 'object' && course.instructor
-    ? course.instructor
-    : {
-        name: course.instructor || course.instructor_name || 'Instructor',
-        nameEn: course.instructor || course.instructor_name || 'Instructor',
-        avatar: course.instructorAvatar || course.instructor_avatar || '/assets/abdullah1.jpg'
-      }
-  const isEnrolled = isAuthenticated && user?.enrolledCourses?.includes(course.id)
-  const progress = user?.progress?.[course.id] || 0
-
-  const title = language === 'ar' ? course.title : (course.titleEn || course.title)
-  const description = language === 'ar' ? course.description : (course.descriptionEn || course.description)
-  const instructorName = language === 'ar' ? instructor.name : (instructor.nameEn || instructor.name)
+  const fallbackThumbnail = "/assets/hero-background.png";
+  const thumbnailSrc =
+    course.thumbnail ||
+    course.thumbnail_url ||
+    course.image ||
+    fallbackThumbnail;
+  const instructor =
+    typeof course.instructor === "object" && course.instructor
+      ? course.instructor
+      : {
+          name: course.instructor || course.instructor_name || "Instructor",
+          nameEn: course.instructor || course.instructor_name || "Instructor",
+          avatar:
+            course.instructorAvatar ||
+            course.instructor_avatar ||
+            "/assets/abdullah1.jpg",
+          bio: course.instructor_bio || "",
+        };
+  const isArabic = language === "ar";
+  const formatNumber = (value) =>
+    Number(value || 0).toLocaleString(isArabic ? "ar-EG" : "en-US");
+  const title = isArabic ? course.title : course.titleEn || course.title;
+  const description = isArabic
+    ? course.description
+    : course.descriptionEn || course.description;
+  const instructorName = isArabic
+    ? instructor.name
+    : instructor.nameEn || instructor.name;
+  const categoryName = isArabic
+    ? course.categoryName || course.category
+    : course.categoryNameEn || course.categoryName || course.category;
+  const cardHref = course.href || `/courses/${course.id}`;
 
   const getLevelBadge = (level) => {
     const levels = {
-      beginner: { label: t('course.level.beginner'), color: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' },
-      intermediate: { label: t('course.level.intermediate'), color: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400' },
-      advanced: { label: t('course.level.advanced'), color: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400' },
-    }
-    return levels[level] || levels.beginner
-  }
+      beginner: {
+        label: t("course.level.beginner"),
+        color:
+          "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400",
+      },
+      intermediate: {
+        label: t("course.level.intermediate"),
+        color:
+          "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400",
+      },
+      advanced: {
+        label: t("course.level.advanced"),
+        color: "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400",
+      },
+    };
+    return levels[level] || levels.beginner;
+  };
 
-  const levelBadge = getLevelBadge(course.level)
-  const ArrowIcon = isRTL ? FiArrowLeft : FiArrowRight
+  const levelBadge = getLevelBadge(course.level);
+  const ArrowIcon = isRTL ? FiArrowLeft : FiArrowRight;
+  const priceDisplay = formatCoursePrice(course.price);
+  const originalPriceDisplay = course.originalPrice
+    ? formatCoursePrice(course.originalPrice).full
+    : null;
+  const progressValue =
+    Number(course.progress ?? user?.progress?.[course.id] ?? 0) || 0;
+  const isEnrolled =
+    !course.isDemo &&
+    isAuthenticated &&
+    (course.isEnrolled ||
+      progressValue > 0 ||
+      user?.enrolledCourses?.includes(course.id));
 
-  if (variant === 'horizontal') {
+  if (variant === "horizontal") {
     return (
-      <Link to={`/courses/${course.id}`} className="card flex flex-col md:flex-row group">
+      <Link
+        to={cardHref}
+        className="bepro-course-card bepro-course-card-horizontal flex flex-col md:flex-row group min-w-0"
+      >
         {/* Thumbnail */}
-        <div className="relative w-full md:w-64 h-48 md:h-auto shrink-0 overflow-hidden">
-          <img
+        <div className="relative w-full md:w-48 lg:w-64 h-48 md:h-auto md:min-h-[12rem] shrink-0 overflow-hidden">
+          <ImageWithFallback
             src={thumbnailSrc}
             alt={title}
             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-            onError={(event) => {
-              event.currentTarget.src = fallbackThumbnail
-            }}
           />
           {course.isFree && (
             <span className="absolute top-3 start-3 badge bg-green-500 text-white">
-              {t('course.free')}
+              {t("course.free")}
             </span>
           )}
           {course.isBestseller && (
             <span className="absolute top-3 end-3 badge bg-yellow-500 text-white">
-              Bestseller
+              {t("courseExtra.bestseller")}
             </span>
           )}
         </div>
 
         {/* Content */}
-        <div className="flex-1 p-6 flex flex-col">
+        <div className="flex-1 p-4 sm:p-6 flex flex-col min-w-0">
           <div className="flex items-center gap-2 mb-2">
-            <span className={`badge ${levelBadge.color}`}>{levelBadge.label}</span>
+            <span className="bepro-course-badge">
+              {levelBadge.label}
+            </span>
+            {categoryName && (
+              <span className="bepro-course-badge bepro-course-badge-muted">
+                {categoryName}
+              </span>
+            )}
           </div>
-          
+
           <h3 className="text-xl font-bold mb-2 group-hover:text-primary-500 transition-colors line-clamp-2">
             {title}
           </h3>
-          
+
           <p className="text-secondary-600 dark:text-secondary-400 text-sm mb-4 line-clamp-2">
             {description}
           </p>
 
-          <div className="flex items-center gap-4 text-sm text-secondary-500 mb-4">
+          <div className="flex flex-wrap items-center gap-3 sm:gap-4 text-sm text-secondary-500 mb-4">
             <span className="flex items-center gap-1">
               <FiBookOpen className="w-4 h-4" />
-              {course.lessons} {t('course.lessons')}
+              {course.lessons} {t("course.lessons")}
             </span>
             <span className="flex items-center gap-1">
               <FiClock className="w-4 h-4" />
-              {course.duration} {t('course.hours')}
+              {course.duration} {t("course.hours")}
             </span>
             <span className="flex items-center gap-1">
               <FiUsers className="w-4 h-4" />
-              {course.students.toLocaleString()}
+              {formatNumber(course.students)}
             </span>
           </div>
 
-          <div className="mt-auto flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <img
-                src={instructor.avatar || '/assets/abdullah1.jpg'}
-                alt={instructorName}
-                className="w-8 h-8 rounded-full object-cover"
-                onError={(event) => {
-                  event.currentTarget.src = '/assets/abdullah1.jpg'
-                }}
-              />
-              <span className="text-sm font-medium">{instructorName}</span>
-            </div>
-            
-            <div className="flex items-center gap-3">
-              <div className="flex items-center gap-1 text-yellow-500">
-                <FiStar className="w-4 h-4 fill-current" />
-                <span className="font-medium">{course.rating}</span>
+          <div className="mt-auto flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div className="min-w-0">
+              <div className="flex items-center gap-2">
+                <ImageWithFallback
+                  src={instructor.avatar || "/assets/abdullah1.jpg"}
+                  alt={instructorName}
+                  className="w-8 h-8 rounded-full object-cover"
+                  fallback="/assets/abdullah1.jpg"
+                />
+                <span className="text-sm font-medium">{instructorName}</span>
               </div>
-              {course.isFree ? (
-                <span className="text-lg font-bold text-green-500">{t('course.free')}</span>
+              {instructor.bio && (
+                <p className="text-xs text-secondary-500 line-clamp-2 mt-2 max-w-xs">
+                  {instructor.bio}
+                </p>
+              )}
+            </div>
+
+            <div className="flex items-center gap-3">
+              {!course.isDemo && (
+                <div className="flex items-center gap-1 text-yellow-500">
+                  <FiStar className="w-4 h-4 fill-current" />
+                  <span className="font-medium">{course.rating}</span>
+                </div>
+              )}
+              {course.isDemo ? (
+                <span className="text-sm font-bold text-primary-500">
+                  {t("course.demoContent", { defaultValue: "Demo content" })}
+                </span>
+              ) : course.isFree ? (
+                <span className="text-lg font-bold text-green-500">
+                  {t("course.free")}
+                </span>
               ) : (
                 <div className="text-end">
                   <span className="text-lg font-bold text-primary-500">
-                    {course.price} {t('course.price')}
+                    {priceDisplay.full}
                   </span>
-                  {course.originalPrice > course.price && (
-                    <span className="text-sm text-secondary-400 line-through ms-2">
-                      {course.originalPrice}
-                    </span>
-                  )}
+                  {originalPriceDisplay &&
+                    course.originalPrice > course.price && (
+                      <span className="text-sm text-secondary-400 line-through ms-2">
+                        {originalPriceDisplay}
+                      </span>
+                    )}
                 </div>
               )}
             </div>
           </div>
         </div>
       </Link>
-    )
+    );
   }
 
   return (
     <Link
-      to={`/courses/${course.id}`}
-      className="block bg-[#1A1A1A] border border-[#2E2E2E] rounded-lg overflow-hidden shadow-md hover:shadow-lg hover:shadow-black/30 hover:border-[#3E3E3E] transition-all duration-300 group"
+      to={cardHref}
+      className="bepro-course-card block overflow-hidden group"
     >
       {/* Thumbnail */}
       <div className="relative aspect-video overflow-hidden">
-        <img
+        <ImageWithFallback
           src={thumbnailSrc}
           alt={title}
           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-          onError={(event) => {
-            event.currentTarget.src = fallbackThumbnail
-          }}
         />
-        
+
         {/* Overlay on hover */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
-          <div className="w-14 h-14 bg-white/90 rounded-full flex items-center justify-center shadow-lg transform scale-90 group-hover:scale-100 transition-transform duration-300">
-            <FiPlay className="w-6 h-6 text-[#009FFD] ms-1" />
+        {!course.isDemo && (
+          <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
+            <div className="w-14 h-14 bg-white/90 rounded-full flex items-center justify-center shadow-lg transform scale-90 group-hover:scale-100 transition-transform duration-300">
+              <FiPlay className="w-6 h-6 text-primary-500 ms-1" />
+            </div>
           </div>
-        </div>
+        )}
 
         {/* Badges */}
         <div className="absolute top-3 start-3 flex flex-col gap-2">
           {course.isFree && (
             <span className="bg-emerald-500 text-white text-xs font-semibold px-3 py-1 rounded-full shadow-sm">
-              {t('course.free')}
+              {t("course.free")}
             </span>
           )}
           {course.isBestseller && (
             <span className="bg-amber-500 text-white text-xs font-semibold px-3 py-1 rounded-full shadow-sm">
-              Bestseller
+              {t("courseExtra.bestseller")}
             </span>
           )}
         </div>
 
         {/* Rating Badge */}
-        <div className="absolute top-3 end-3 flex items-center gap-1 bg-black/60 backdrop-blur-sm px-2 py-1 rounded-full">
-          <FiStar className="w-3.5 h-3.5 text-amber-400 fill-amber-400" />
-          <span className="text-xs font-bold text-white">{course.rating}</span>
-        </div>
+        {!course.isDemo && (
+          <div className="absolute top-3 end-3 flex items-center gap-1 bg-black/60 backdrop-blur-sm px-2 py-1 rounded-full">
+            <FiStar className="w-3.5 h-3.5 text-amber-400 fill-amber-400" />
+            <span className="text-xs font-bold text-white">{course.rating}</span>
+          </div>
+        )}
 
         {/* Progress bar for enrolled courses */}
-        {isEnrolled && progress > 0 && (
-          <div className="absolute bottom-0 left-0 right-0 h-1.5 bg-gray-700">
+        {isEnrolled && progressValue > 0 && (
+          <div className="absolute inset-x-0 bottom-0 h-1.5 bg-secondary-200 dark:bg-gray-700">
             <div
-              className="h-full bg-gradient-to-r from-[#009FFD] to-[#00D9FF] transition-all"
-              style={{ width: `${progress}%` }}
+              className="h-full bg-gradient-to-r from-primary-500 to-primary-400 transition-all"
+              style={{ width: `${progressValue}%` }}
             />
           </div>
         )}
@@ -196,60 +261,80 @@ const CourseCard = ({ course, variant = 'default' }) => {
       <div className="p-4 md:p-5">
         {/* Level Badge */}
         <div className="mb-3">
-          <span className={`text-xs font-semibold px-2.5 py-1 rounded-md ${levelBadge.color}`}>
+          <span className="bepro-course-badge">
             {levelBadge.label}
           </span>
+          {categoryName && (
+            <span className="bepro-course-badge bepro-course-badge-muted ms-2">
+              {categoryName}
+            </span>
+          )}
         </div>
 
         {/* Title */}
-        <h3 className="font-bold text-base md:text-lg text-white mb-3 leading-tight group-hover:text-[#00D9FF] transition-colors duration-300 line-clamp-2">
+        <h3 className="bepro-course-title font-bold text-base md:text-lg mb-3 leading-tight transition-colors duration-300 line-clamp-2">
           {title}
         </h3>
 
         {/* Instructor */}
         <div className="flex items-center gap-2.5 mb-4">
-          <img
-            src={instructor.avatar || '/assets/abdullah1.jpg'}
+          <ImageWithFallback
+            src={instructor.avatar || "/assets/abdullah1.jpg"}
             alt={instructorName}
-            className="w-8 h-8 rounded-full object-cover border-2 border-[#2E2E2E]"
-            onError={(event) => {
-              event.currentTarget.src = '/assets/abdullah1.jpg'
-            }}
+            className="w-8 h-8 rounded-full object-cover border-2 border-secondary-200 dark:border-dark-border"
+            fallback="/assets/abdullah1.jpg"
           />
-          <span className="text-sm text-gray-400 font-medium">
+          <span className="bepro-course-text text-sm font-medium">
             {instructorName}
           </span>
         </div>
+        {instructor.bio && (
+          <p className="bepro-course-text text-xs mb-4 line-clamp-2">
+            {instructor.bio}
+          </p>
+        )}
 
         {/* Stats */}
-        <div className="flex items-center gap-3 md:gap-4 text-xs text-gray-400 mb-4 flex-wrap">
+        <div className="bepro-course-stats flex items-center gap-3 md:gap-4 text-xs mb-4 flex-wrap">
           <span className="flex items-center gap-1.5">
             <FiBookOpen className="w-3.5 h-3.5 text-gray-500" />
-            <span>{course.lessons} {t('course.lessons')}</span>
+            <span>
+              {course.lessons} {t("course.lessons")}
+            </span>
           </span>
           <span className="flex items-center gap-1.5">
             <FiClock className="w-3.5 h-3.5 text-gray-500" />
-            <span>{course.duration} {t('course.hours')}</span>
+            <span>
+              {course.duration} {t("course.hours")}
+            </span>
           </span>
-          <span className="flex items-center gap-1.5">
-            <FiUsers className="w-3.5 h-3.5 text-gray-500" />
-            <span>{course.students.toLocaleString()}</span>
-          </span>
+          {!course.isDemo && (
+            <span className="flex items-center gap-1.5">
+              <FiUsers className="w-3.5 h-3.5 text-gray-500" />
+              <span>{formatNumber(course.students)}</span>
+            </span>
+          )}
         </div>
 
         {/* Footer */}
-        <div className="flex items-center justify-between pt-4 border-t border-[#2E2E2E]">
+        <div className="bepro-course-footer flex items-center justify-between pt-4 border-t">
           {/* Price */}
-          {course.isFree ? (
-            <span className="text-lg font-bold text-emerald-400">{t('course.free')}</span>
+          {course.isDemo ? (
+            <span className="text-sm font-semibold text-primary-500">
+              {t("course.demoContent", { defaultValue: "Demo content" })}
+            </span>
+          ) : course.isFree ? (
+              <span className="bepro-course-price text-lg font-bold">
+              {t("course.free")}
+            </span>
           ) : (
             <div className="flex items-baseline gap-2">
-              <span className="text-xl font-bold text-[#00D9FF]">
-                {course.price} {t('course.price')}
+              <span className="bepro-course-price text-xl font-bold">
+                {priceDisplay.full}
               </span>
-              {course.originalPrice > course.price && (
+              {originalPriceDisplay && course.originalPrice > course.price && (
                 <span className="text-sm text-gray-500 line-through">
-                  {course.originalPrice}
+                  {originalPriceDisplay}
                 </span>
               )}
             </div>
@@ -257,20 +342,24 @@ const CourseCard = ({ course, variant = 'default' }) => {
 
           {/* Action */}
           {isEnrolled ? (
-            <span className="flex items-center gap-1.5 text-sm font-semibold text-[#00D9FF]">
-              {t('course.continue')}
+            <span className="flex items-center gap-1.5 text-sm font-semibold text-primary-500">
+              {t("course.continue")}
               <ArrowIcon className="w-4 h-4" />
             </span>
           ) : (
-            <span className="flex items-center gap-1.5 text-sm font-semibold text-gray-400 group-hover:text-[#00D9FF] transition-colors duration-300">
-              {t('course.enroll')}
+            <span className="bepro-course-action flex items-center gap-1.5 text-sm font-semibold transition-colors duration-300">
+              {course.isDemo
+                ? t("course.viewDemoDetails", {
+                    defaultValue: isArabic ? "عرض التفاصيل" : "View details",
+                  })
+                : t("course.enroll")}
               <ArrowIcon className="w-4 h-4" />
             </span>
           )}
         </div>
       </div>
     </Link>
-  )
-}
+  );
+};
 
-export default CourseCard
+export default CourseCard;

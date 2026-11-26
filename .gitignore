@@ -10,3 +10,42 @@ pnpm-debug.log*
 .DS_Store
 .vscode/
 *.local
+.cursor/
+cursor/
+refs/codex/
+.vercel
+.env*
+web_test/env_audit_report.json
+web_test/env_scan_report.json
+
+# Git internal files accidentally copied to project root
+/hooks/
+/info/
+/objects/
+/refs/
+/logs/
+/HEAD
+/config
+/description
+/index
+/COMMIT_EDITMSG
+
+# Temporary files
+.tmp-*/
+.tmp-*.png
+.codex-vite.*.log
+i18n-audit-report.json
+tmp-auth-check.*
+tmp_extract_postman_endpoints.py
+
+# Keep example environment file tracked
+!.env.example
+
+# Accidental Git command output
+/cls
+
+/cls
+
+# Accidental command output
+/e --show-toplevel
+/t-Path .git

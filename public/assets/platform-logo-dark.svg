@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 220" role="img" aria-labelledby="title">
+  <title>BeePro Academy</title>
+  <g fill="none" stroke="#1769e0" stroke-width="16" stroke-linejoin="round">
+    <path d="M92 37 170 82v56l-78 45-48-28V65z"/>
+    <path d="M92 37v146M44 65l48 28 78-45M44 155l48-28 78 45"/>
+  </g>
+  <text x="202" y="144" fill="#12325f" font-family="Arial, Helvetica, sans-serif" font-size="76" font-weight="800" letter-spacing="2">BEE PRO</text>
+</svg>
